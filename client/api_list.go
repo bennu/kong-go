@@ -28,6 +28,11 @@ func (cli *Client) APIList(ctx context.Context, options types.APIListOptions) (t
 
 	defer resp.Body.Close()
 
+	var apiErrorResp types.APIErrorResponse
+	if err := checkResponseErr(resp, apiErrorResp); err != nil {
+		return apis, err
+	}
+
 	err = json.NewDecoder(resp.Body).Decode(&apis)
 	return apis, err
 }

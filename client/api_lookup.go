@@ -3,19 +3,15 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/bennu/kong-go/types"
 )
 
-func (cli *Client) APICreate(ctx context.Context, name string, options types.APICreate) (types.API, error) {
-	apiCreateRequest := types.APICreateRequest{
-		APICreate: options,
-		Name:      name,
-	}
-
+func (cli *Client) APILookup(ctx context.Context, name string) (types.API, error) {
 	var api types.API
 
-	resp, err := cli.post(ctx, "/apis", apiCreateRequest)
+	resp, err := cli.get(ctx, fmt.Sprintf("/apis/%s", name), nil)
 	if err != nil {
 		return api, err
 	}

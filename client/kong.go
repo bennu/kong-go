@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -91,4 +92,20 @@ func encodeBody(obj interface{}) (*bytes.Buffer, error) {
 		}
 	}
 	return buff, nil
+}
+
+func checkResponseErr(resp *http.Response, obj interface{}) error {
+	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
+		return nil
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(body, &obj); err != nil {
+		return fmt.Errorf("Error reading JSON: %v", err)
+	}
+
+	return fmt.Errorf("Error response from kong: %s", obj)
+
 }
