@@ -45,6 +45,10 @@ func (cli *Client) get(ctx context.Context, path string, query url.Values) (*htt
 	return cli.request(ctx, http.MethodGet, path, query, nil)
 }
 
+func (cli *Client) delete(ctx context.Context, path string, query url.Values) (*http.Response, error) {
+	return cli.request(ctx, http.MethodDelete, path, query, nil)
+}
+
 func (cli *Client) request(ctx context.Context, method, path string, query url.Values, body io.Reader) (*http.Response, error) {
 	p, err := cli.apiPath(path, query)
 	if err != nil {
