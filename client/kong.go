@@ -1,7 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -27,10 +31,48 @@ func NewClient(client *http.Client) (*Client, error) {
 	return &Client{client: client, BaseURL: baseURL}, nil
 }
 
-func (cli *Client) get(ctx context.Context, path string, query url.Values) (*http.Response, error) {
-	url, err := url.Parse(path)
+func (cli *Client) post(ctx context.Context, path string, obj interface{}) (*http.Response, error) {
+	body, err := encodeBody(obj)
 	if err != nil {
 		return nil, err
+	}
+
+	return cli.request(ctx, http.MethodPost, path, nil, body)
+}
+
+func (cli *Client) get(ctx context.Context, path string, query url.Values) (*http.Response, error) {
+	return cli.request(ctx, http.MethodGet, path, query, nil)
+}
+
+func (cli *Client) request(ctx context.Context, method, path string, query url.Values, body io.Reader) (*http.Response, error) {
+	p, err := cli.apiPath(path, query)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(body, method, p)
+
+	req, err := http.NewRequest(method, p, body)
+	if err != nil {
+		return nil, err
+	}
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := ctxhttp.Do(ctx, cli.client, req)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return resp, err
+}
+
+func (cli *Client) apiPath(path string, query url.Values) (string, error) {
+	url, err := url.Parse(path)
+	if err != nil {
+		return "", err
 	}
 
 	ref := cli.BaseURL.ResolveReference(url)
@@ -38,16 +80,15 @@ func (cli *Client) get(ctx context.Context, path string, query url.Values) (*htt
 	if query != nil {
 		ref.RawQuery = query.Encode()
 	}
+	return ref.String(), nil
+}
 
-	req, err := http.NewRequest(http.MethodGet, ref.String(), nil)
-	if err != nil {
-		return nil, err
+func encodeBody(obj interface{}) (*bytes.Buffer, error) {
+	buff := bytes.NewBuffer(nil)
+	if obj != nil {
+		if err := json.NewEncoder(buff).Encode(obj); err != nil {
+			return nil, err
+		}
 	}
-
-	resp, err := ctxhttp.Do(ctx, cli.client, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, err
+	return buff, nil
 }
