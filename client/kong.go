@@ -41,6 +41,15 @@ func (cli *Client) post(ctx context.Context, path string, obj interface{}) (*htt
 	return cli.request(ctx, http.MethodPost, path, nil, body)
 }
 
+func (cli *Client) patch(ctx context.Context, path string, obj interface{}) (*http.Response, error) {
+	body, err := encodeBody(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return cli.request(ctx, http.MethodPatch, path, nil, body)
+}
+
 func (cli *Client) get(ctx context.Context, path string, query url.Values) (*http.Response, error) {
 	return cli.request(ctx, http.MethodGet, path, query, nil)
 }
@@ -54,7 +63,6 @@ func (cli *Client) request(ctx context.Context, method, path string, query url.V
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(body, method, p)
 
 	req, err := http.NewRequest(method, p, body)
 	if err != nil {

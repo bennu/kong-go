@@ -33,12 +33,17 @@ type APICreateRequest struct {
 	Name string `json:"name,omitempty"`
 }
 
+type APIUpdate struct {
+	APICreate
+	Name string `json:"name,omitempty"`
+}
+
 type APICreate struct {
 	Hosts                  []string `json:"hosts,omitempty"`
 	URIS                   []string `json:"uris,omitempty"`
 	Methods                []string `json:"methods,omitempty"`
 	HTTPIfTerminated       bool     `json:"http_if_terminated,omitempty"`
-	HTTPSOnly              bool     `json:"http_only,omitempty"`
+	HTTPSOnly              bool     `json:"https_only,omitempty"`
 	PreserveHost           bool     `json:"preserve_host,omitempty"`
 	Retries                int      `json:"retries,omitempty"`
 	StripURI               bool     `json:"strip_uri,omitempty"`
